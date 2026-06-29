@@ -51,6 +51,7 @@
 .legend-color.holiday    { background: linear-gradient(135deg, #fffbeb, #fde68a); border-color: #d97706; }
 .legend-color.vacation   { background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-color: #0284c7; }
 .legend-color.vacation-pending { background: linear-gradient(135deg, #e0f2fe, #bae6fd); border-color: #0284c7; border-style: dashed; }
+.legend-color.vacation-cancel-pending { background: linear-gradient(135deg, #fff7ed, #fed7aa); border-color: #ea580c; border-style: dashed; }
 .legend-color.leave      { background: linear-gradient(135deg, #f5f3ff, #ddd6fe); border-color: #7c3aed; }
 .legend-color.leave-pending { background: linear-gradient(135deg, #faf5ff, #ede9fe); border-color: #a78bfa; border-style: dashed; }
 .legend-color.simulated  { background: linear-gradient(135deg, #fefce8, #fde047); border-color: #ca8a04; }
@@ -166,6 +167,13 @@
   border-color: #0284c7;
   border-style: dashed;
   color: #075985;
+}
+
+.calendar-day.vacation-cancel-pending {
+  background: linear-gradient(135deg, #fff7ed, #fed7aa);
+  border-color: #ea580c;
+  border-style: dashed;
+  color: #9a3412;
 }
 
 .calendar-day.leave {

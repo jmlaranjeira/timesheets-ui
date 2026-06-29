@@ -391,9 +391,9 @@
       </summary>
       <div class="leave-days-list">
         <% upcomingVacation.forEach(function(v) { %>
-        <div class="leave-day-item leave-day-item--<%= v.stateCode === 3 ? 'vacation-approved' : 'vacation-pending' %>">
+        <div class="leave-day-item leave-day-item--<%= v.stateCode === 3 ? 'vacation-approved' : v.stateCode === 6 ? 'vacation-cancel' : 'vacation-pending' %>">
           <div class="leave-day-icon">
-            <i class="fas fa-<%= v.stateCode === 3 ? 'plane' : 'hourglass-half' %>"></i>
+            <i class="fas fa-<%= v.stateCode === 3 ? 'plane' : v.stateCode === 6 ? 'plane-slash' : 'hourglass-half' %>"></i>
           </div>
           <div class="leave-day-info">
             <span class="leave-day-type"><%= v.type %></span>
@@ -503,6 +503,10 @@
             <div class="legend-color vacation-pending" aria-hidden="true"></div>
             <span>Vacaciones solicitadas</span>
           </div>
+          <div class="legend-item" role="button" tabindex="0" data-status="vacation-cancel-pending" aria-pressed="true">
+            <div class="legend-color vacation-cancel-pending" aria-hidden="true"></div>
+            <span>Cancelación solicitada</span>
+          </div>
           <div class="legend-item" role="button" tabindex="0" data-status="leave" aria-pressed="true">
             <div class="legend-color leave" aria-hidden="true"></div>
             <span>Permiso</span>
@@ -571,6 +575,7 @@
                    day.status === 'holiday' ? 'Día festivo' :
                    day.status === 'vacation' ? 'Vacaciones' :
                    day.status === 'vacation-pending' ? 'Vacaciones solicitadas' :
+                   day.status === 'vacation-cancel-pending' ? 'Cancelación solicitada' :
                    day.status === 'leave' ? 'Permiso' :
                    day.status === 'leave-pending' ? 'Permiso pendiente' :
                    day.status === 'registered' ? 'Horas registradas' :

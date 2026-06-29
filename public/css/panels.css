@@ -63,6 +63,7 @@ details.leave-days-panel[open] .card-header__chevron {
 .leave-day-item--pending           { border-left-color: #f59e0b; }
 .leave-day-item--vacation-approved { border-left-color: #0284c7; }
 .leave-day-item--vacation-pending  { border-left-color: #0284c7; border-left-style: dashed; }
+.leave-day-item--vacation-cancel   { border-left-color: #ea580c; border-left-style: dashed; }
 .leave-day-item--past              { border-left-color: #94a3b8; opacity: 0.7; }
 
 .leave-day-icon {
@@ -76,6 +77,7 @@ details.leave-days-panel[open] .card-header__chevron {
 .leave-day-item--pending  .leave-day-icon           { color: #f59e0b; }
 .leave-day-item--vacation-approved .leave-day-icon  { color: #0284c7; }
 .leave-day-item--vacation-pending  .leave-day-icon  { color: #0ea5e9; }
+.leave-day-item--vacation-cancel   .leave-day-icon  { color: #ea580c; }
 .leave-day-item--past     .leave-day-icon           { color: #94a3b8; }
 
 .leave-day-info {
