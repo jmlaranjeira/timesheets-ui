@@ -30,7 +30,19 @@ async function login(username, password) {
   return data.User.AccessToken;
 }
 
-// Exported for use by auth route to validate credentials
+// Cached login — reuses the token for 50 min to avoid rate-limiting /authenticate
+async function getToken(username, password) {
+  const cacheKey = `auth_token_${username}`;
+  const cached = get(cacheKey);
+  if (cached) return cached;
+
+  logInfo('Fetching new auth token', { username });
+  const token = await login(username, password);
+  set(cacheKey, token, 3000); // 50 minutes
+  return token;
+}
+
+// Exported for use by auth route to validate credentials (bypasses cache intentionally)
 export async function loginUser(username, password) {
   return login(username, password);
 }
@@ -199,7 +211,7 @@ export async function getTimeOffDaysDetailed(credentials) {
 
   logInfo('Fetching time-off days from API');
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
 
   const [calendarMap, { map: leaveMap }, { map: vacationMap }] = await Promise.all([
     fetchCalendarDays(token, DateTime.now().year),
@@ -277,7 +289,7 @@ export async function getVacationRequestsList(credentials) {
 
   logInfo('Fetching vacation requests list from vacations view');
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
   const entries = await fetchVacationsView(token);
 
   const result = entries.map(e => ({
@@ -299,7 +311,7 @@ export async function getVacationRequestsList(credentials) {
 
 export async function cancelVacation(credentials, vacationId, startISO, endISO, wholeRange = true) {
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
 
   // Generate all weekdays in range as DD/MM/YYYY (format expected by the API)
   const days = [];
@@ -336,7 +348,7 @@ export async function cancelVacation(credentials, vacationId, startISO, endISO, 
 
 export async function requestVacation(credentials, startISO, endISO) {
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
 
   const start = DateTime.fromISO(startISO, { zone: 'Europe/Madrid' }).startOf('day');
   const end   = DateTime.fromISO(endISO,   { zone: 'Europe/Madrid' }).endOf('day');
@@ -369,7 +381,7 @@ export async function getLeaveDaysList(credentials) {
 
   logInfo('Fetching leave days list from API');
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
   const { list } = await fetchLeaveDays(token);
 
   // Sort by start date ascending, keep only relevant fields
@@ -393,7 +405,7 @@ export async function getLeaveDaysList(credentials) {
 
 export async function getEventsForDay(date, credentials) {
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
   const formattedDate = DateTime.fromISO(date).toFormat('dd-MM-yyyy');
 
   const response = await fetch(
@@ -447,7 +459,7 @@ export async function getEventsForDay(date, credentials) {
 
 export async function disableDay(date, credentials, message = 'Registro equivocado') {
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
   const formattedDate = DateTime.fromISO(date).toFormat('dd-MM-yyyy');
 
   // Fetch events registered for this day
@@ -586,7 +598,7 @@ export async function submitHoursRange({ startDate, endDate, dryRun = true, cred
   let accessToken = null;
   if (!dryRun) {
     const creds = getCreds(credentials);
-    accessToken = await login(creds.username, creds.password);
+    accessToken = await getToken(creds.username, creds.password);
   }
 
   const results = [];
@@ -700,7 +712,7 @@ export async function getDetailedEventsByRange(startDate, endDate, credentials) 
   const results = [];
 
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
 
   for (const date of registeredDays) {
     const formattedDate = DateTime.fromISO(date).toFormat('dd-MM-yyyy');
@@ -739,7 +751,7 @@ export async function getRegisteredDaysFromReport(startDate, endDate, credential
 
   logInfo('Fetching registered days from API', { startDate, endDate });
   const creds = getCreds(credentials);
-  const token = await login(creds.username, creds.password);
+  const token = await getToken(creds.username, creds.password);
   const formData = new FormData();
   formData.append('startDate', DateTime.fromISO(startDate).toFormat('dd-MM-yyyy'));
   formData.append('endDate', DateTime.fromISO(endDate).toFormat('dd-MM-yyyy'));
