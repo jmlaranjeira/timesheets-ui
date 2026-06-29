@@ -402,6 +402,15 @@
             </span>
           </div>
           <span class="leave-day-state"><%= v.state %></span>
+          <% if (v.canCancel && v.vacationId) { %>
+          <button class="btn btn-ghost btn-xs vacation-cancel-btn"
+                  data-vacation-id="<%= v.vacationId %>"
+                  data-start="<%= v.start %>"
+                  data-end="<%= v.end %>"
+                  title="Solicitar cancelación">
+            <i class="fas fa-times"></i>
+          </button>
+          <% } %>
         </div>
         <% }); %>
         <% upcomingLeave.forEach(function(l) { %>
@@ -418,6 +427,18 @@
           <span class="leave-day-state"><%= l.state %></span>
         </div>
         <% }); %>
+        <!-- Solicitar vacaciones -->
+        <div class="leave-day-request-form">
+          <div class="leave-day-request-form__fields">
+            <input type="date" id="vacation-request-start" class="leave-day-request-form__input" placeholder="Inicio" />
+            <span class="leave-day-request-form__sep">→</span>
+            <input type="date" id="vacation-request-end" class="leave-day-request-form__input" placeholder="Fin" />
+          </div>
+          <button id="vacation-request-btn" class="btn btn-primary btn-xs">
+            <i class="fas fa-plus"></i> Solicitar vacaciones
+          </button>
+        </div>
+
         <% if (pastVacation.length > 0 || pastLeave.length > 0) { %>
         <details class="leave-days-past">
           <summary>Ver <%= pastVacation.length + pastLeave.length %> registro<%= (pastVacation.length + pastLeave.length) !== 1 ? 's' : '' %> pasado<%= (pastVacation.length + pastLeave.length) !== 1 ? 's' : '' %></summary>
@@ -609,6 +630,16 @@
   <!-- Schedule tooltip (shown after single-day simulation) -->
   <div id="schedule-tooltip" class="schedule-tooltip" role="status" aria-live="polite" hidden>
     <div class="schedule-tooltip__content"></div>
+  </div>
+
+  <!-- Vacation cancel tooltip -->
+  <div id="vacation-cancel-tooltip" class="undo-tooltip" role="dialog" aria-label="Cancelar vacaciones" hidden>
+    <span class="undo-tooltip__text"><i class="fas fa-plane-slash"></i> ¿Solicitar cancelación?</span>
+    <div id="vacation-cancel-dates" class="undo-tooltip__hours" style="font-size:0.75rem;color:var(--text-secondary,#64748b);margin-bottom:0.25rem;"></div>
+    <div class="undo-tooltip__actions">
+      <button id="vacation-cancel-confirm-btn" class="btn btn-danger btn-xs">Sí, cancelar</button>
+      <button id="vacation-cancel-dismiss-btn" class="btn btn-ghost btn-xs">No</button>
+    </div>
   </div>
 
   <!-- Undo tooltip (shared, moved around via JS) -->

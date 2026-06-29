@@ -520,6 +520,139 @@ document.addEventListener('DOMContentLoaded', async function () {
     return _origFetch(input, init);
   };
 
+  // --- Vacation cancel tooltip ---
+
+  const vacationCancelTooltip    = document.getElementById('vacation-cancel-tooltip');
+  const vacationCancelConfirmBtn = document.getElementById('vacation-cancel-confirm-btn');
+  const vacationCancelDismissBtn = document.getElementById('vacation-cancel-dismiss-btn');
+  const vacationCancelDatesEl    = document.getElementById('vacation-cancel-dates');
+  let   vacationCancelTarget     = null;
+
+  function hideVacationCancelTooltip() {
+    if (vacationCancelTooltip) vacationCancelTooltip.hidden = true;
+    vacationCancelTarget = null;
+  }
+
+  function positionVacationCancelTooltip(btn) {
+    const rect = btn.getBoundingClientRect();
+    const w = 210;
+    let left = rect.left + rect.width / 2 - w / 2;
+    let top  = rect.bottom + 6;
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    vacationCancelTooltip.style.left = `${left}px`;
+    vacationCancelTooltip.style.top  = `${top}px`;
+  }
+
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.vacation-cancel-btn');
+    if (btn) {
+      e.stopPropagation();
+      vacationCancelTarget = btn;
+      if (vacationCancelDatesEl) {
+        const start = btn.dataset.start || '';
+        const end   = btn.dataset.end   || '';
+        vacationCancelDatesEl.textContent = start === end ? start : `${start} → ${end}`;
+      }
+      positionVacationCancelTooltip(btn);
+      vacationCancelTooltip.hidden = false;
+      vacationCancelConfirmBtn.focus();
+      return;
+    }
+    if (vacationCancelTooltip && !vacationCancelTooltip.hidden &&
+        !vacationCancelTooltip.contains(e.target)) {
+      hideVacationCancelTooltip();
+    }
+  });
+
+  if (vacationCancelDismissBtn) vacationCancelDismissBtn.addEventListener('click', hideVacationCancelTooltip);
+
+  if (vacationCancelConfirmBtn) {
+    vacationCancelConfirmBtn.addEventListener('click', async function () {
+      if (!vacationCancelTarget) return;
+      const btn        = vacationCancelTarget;
+      const vacationId = btn.dataset.vacationId;
+      const start      = btn.dataset.start;
+      const end        = btn.dataset.end;
+      hideVacationCancelTooltip();
+
+      vacationCancelConfirmBtn.disabled = true;
+      clearAlerts();
+
+      try {
+        const body = new URLSearchParams();
+        body.set('vacationId', vacationId);
+        body.set('start', start);
+        if (end) body.set('end', end);
+
+        const res  = await fetch('/cancel-vacation', {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body   : body.toString(),
+        });
+        const json = await res.json().catch(() => ({}));
+
+        if (json.success) {
+          showAlert('Cancelación de vacaciones solicitada correctamente', 'success');
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          showAlert(json.error ?? 'No se pudo cancelar la vacación', 'error');
+        }
+      } catch {
+        showAlert('Error al solicitar la cancelación', 'error');
+      } finally {
+        vacationCancelConfirmBtn.disabled = false;
+      }
+    });
+  }
+
+  // --- Vacation request form ---
+
+  const vacationRequestBtn   = document.getElementById('vacation-request-btn');
+  const vacationRequestStart = document.getElementById('vacation-request-start');
+  const vacationRequestEnd   = document.getElementById('vacation-request-end');
+
+  if (vacationRequestBtn) {
+    vacationRequestBtn.addEventListener('click', async function () {
+      const start = vacationRequestStart?.value;
+      const end   = vacationRequestEnd?.value || start;
+      if (!start) {
+        showAlert('Selecciona la fecha de inicio', 'error');
+        return;
+      }
+      if (end && end < start) {
+        showAlert('La fecha de fin no puede ser anterior al inicio', 'error');
+        return;
+      }
+
+      vacationRequestBtn.disabled = true;
+      clearAlerts();
+
+      try {
+        const body = new URLSearchParams();
+        body.set('start', start);
+        if (end) body.set('end', end);
+
+        const res  = await fetch('/request-vacation', {
+          method : 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body   : body.toString(),
+        });
+        const json = await res.json().catch(() => ({}));
+
+        if (json.success) {
+          showAlert(json.message || 'Vacaciones solicitadas correctamente', 'success');
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          showAlert(json.error ?? 'No se pudo solicitar las vacaciones', 'error');
+        }
+      } catch {
+        showAlert('Error al solicitar las vacaciones', 'error');
+      } finally {
+        vacationRequestBtn.disabled = false;
+      }
+    });
+  }
+
   // --- Settings modal ---
 
   const settingsBtn      = document.getElementById('settings-btn');

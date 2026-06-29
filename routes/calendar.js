@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { submitHoursRange, getRegisteredDays, getLeaveDaysList, getVacationRequestsList, disableDay, getEventsForDay, previewDayHours } from '../logic.js';
+import { submitHoursRange, getRegisteredDays, getLeaveDaysList, getVacationRequestsList, disableDay, getEventsForDay, previewDayHours, cancelVacation, requestVacation } from '../logic.js';
 import { catchAsync, validateDateRange } from '../middleware/errorHandler.js';
 import { get as cacheGet, set as cacheSet, del as cacheDel, cacheKeys } from '../utils/cache.js';
 
@@ -196,6 +196,34 @@ export default function createCalendarRouter() {
     }
     const detail = await getEventsForDay(date, req.session.credentials);
     return res.json({ success: true, ...detail });
+  }));
+
+  // Cancel an approved vacation (full range or partial)
+  router.post('/cancel-vacation', catchAsync(async (req, res) => {
+    const { vacationId, start, end, wholeRange } = req.body;
+    if (!vacationId || !start || !/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+      return res.status(400).json({ success: false, error: 'Parámetros inválidos' });
+    }
+    await cancelVacation(req.session.credentials, vacationId, start, end ?? start, wholeRange !== 'false');
+    try {
+      cacheDel(cacheKeys.vacationDaysDetailed());
+      cacheDel('vacation_requests_list');
+    } catch {}
+    return res.json({ success: true });
+  }));
+
+  // Request new vacation days
+  router.post('/request-vacation', catchAsync(async (req, res) => {
+    const { start, end } = req.body;
+    if (!start || !/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+      return res.status(400).json({ success: false, error: 'Fecha inválida' });
+    }
+    const result = await requestVacation(req.session.credentials, start, end ?? start);
+    try {
+      cacheDel(cacheKeys.vacationDaysDetailed());
+      cacheDel('vacation_requests_list');
+    } catch {}
+    return res.json({ success: true, message: result.Message });
   }));
 
   // Undo a registered day — calls disable-event for all events of that date
