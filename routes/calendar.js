@@ -30,7 +30,7 @@ function buildCalendarData(registered, startDate, today) {
       status = 'weekend';
     } else if (isHoliday) {
       status = 'holiday';
-    } else if (find?.status === 'vacation' || find?.status === 'vacation-pending' || find?.status === 'leave' || find?.status === 'leave-pending') {
+    } else if (find?.status === 'vacation' || find?.status === 'vacation-pending' || find?.status === 'vacation-cancel-pending' || find?.status === 'leave' || find?.status === 'leave-pending') {
       status = find.status;
     } else if (isFuture) {
       status = 'future';
@@ -48,7 +48,7 @@ function computeStats(calendarData) {
     registered: calendarData.filter(d => d.status === 'registered').length,
     pending: calendarData.filter(d => d.status === 'pending').length,
     holiday: calendarData.filter(d => d.status === 'holiday').length,
-    vacation: calendarData.filter(d => d.status === 'vacation' || d.status === 'vacation-pending').length,
+    vacation: calendarData.filter(d => d.status === 'vacation' || d.status === 'vacation-pending' || d.status === 'vacation-cancel-pending').length,
   };
 }
 

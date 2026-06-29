@@ -153,17 +153,27 @@ async function fetchVacationData(token) {
   const entries = data?.VacationsAnOnDutyCalendarDays ?? [];
   const map = {};
 
+  // Priority order for overlapping entries on the same day
+  const STATUS_PRIORITY = { holiday: 4, 'vacation-cancel-pending': 3, vacation: 2, 'vacation-pending': 1 };
+
   for (const entry of entries) {
     if (!entry.Day) continue;
     const iso = entry.Day.split('T')[0];
 
+    let newStatus;
     if (entry.IsHoliday) {
-      map[iso] = 'holiday';
+      newStatus = 'holiday';
     } else if (entry.DayType === 1) {
-      // Vacation: State 3 = approved, State 1 = pending/requested
-      if (!map[iso] || map[iso] !== 'holiday') {
-        map[iso] = entry.State === 3 ? 'vacation' : 'vacation-pending';
-      }
+      // State 3 = approved, State 6 = cancellation requested, State 1 = pending
+      if (entry.State === 3) newStatus = 'vacation';
+      else if (entry.State === 6) newStatus = 'vacation-cancel-pending';
+      else newStatus = 'vacation-pending';
+    } else {
+      continue;
+    }
+
+    if ((STATUS_PRIORITY[newStatus] ?? 0) > (STATUS_PRIORITY[map[iso]] ?? 0)) {
+      map[iso] = newStatus;
     }
   }
 
@@ -255,24 +265,39 @@ async function fetchVacationsView(token) {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  const entries = [];
-  $('[data-id]').each((_, el) => {
-    const $el = $(el);
-    const $row = $el.closest('tr');
-    const rowClass = $row.attr('class') || '';
-    const cells = $row.find('td').map((__, td) => $(td).text().trim()).get();
+  // Row class → stateCode mapping:
+  //   table-success  = approved (3)
+  //   table-light    = requested/pending (1)
+  //   table-warning  = cancellation requested (6)
+  //   table-danger   = cancelled/rejected — skip
+  const ROW_STATE = { 'table-success': 3, 'table-light': 1, 'table-warning': 6 };
 
-    const startISO = parseDDMMYYYY($el.attr('data-start')) ?? parseCellDate(cells[1]);
-    const endISO   = parseDDMMYYYY($el.attr('data-end'))   ?? parseCellDate(cells[2]);
-    const canCancel = !!$el.attr('data-start');
+  const entries = [];
+
+  $('tr').each((_, row) => {
+    const $row = $(row);
+    const rowClass = $row.attr('class') || '';
+    const stateCode = Object.entries(ROW_STATE).find(([cls]) => rowClass.includes(cls))?.[1];
+    if (!stateCode) return; // skip header, totals, table-danger rows
+
+    const cells = $row.find('td').map((__, td) => $(td).text().trim()).get();
+    if (cells.length < 3) return;
+
+    // Prefer data attributes on the action icon; fall back to cell text
+    const $icon = $row.find('[data-id]');
+    const startISO = parseDDMMYYYY($icon.attr('data-start')) ?? parseCellDate(cells[1]);
+    const endISO   = parseDDMMYYYY($icon.attr('data-end'))   ?? parseCellDate(cells[2]);
+    if (!startISO) return;
+
+    const year = parseInt($icon.attr('data-year')) || parseInt(startISO.slice(0, 4)) || new Date().getFullYear();
 
     entries.push({
-      vacationId : $el.attr('data-id'),
-      start      : startISO,
-      end        : endISO,
-      stateCode  : rowClass.includes('table-success') ? 3 : 1,
-      year       : parseInt($el.attr('data-year')) || (startISO ? parseInt(startISO.slice(0, 4)) : new Date().getFullYear()),
-      canCancel,
+      vacationId: $icon.attr('data-id') || null,
+      start     : startISO,
+      end       : endISO,
+      stateCode,
+      year,
+      canCancel : !!$icon.attr('data-start'), // only approved entries with an action icon
     });
   });
 
@@ -292,9 +317,11 @@ export async function getVacationRequestsList(credentials) {
   const token = await getToken(creds.username, creds.password);
   const entries = await fetchVacationsView(token);
 
+  const STATE_LABEL = { 3: 'Aprobada', 1: 'Solicitada', 6: 'Cancelación solicitada' };
+
   const result = entries.map(e => ({
     type      : 'Vacaciones',
-    state     : e.stateCode === 3 ? 'Aprobada' : 'Solicitada',
+    state     : STATE_LABEL[e.stateCode] ?? 'Desconocida',
     stateCode : e.stateCode,
     start     : e.start,
     end       : e.end,
