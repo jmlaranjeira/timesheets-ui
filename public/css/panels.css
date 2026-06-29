@@ -119,6 +119,41 @@ details.leave-days-panel[open] .card-header__chevron {
   user-select: none;
 }
 
+/* ─── Vacation Request Form ─────────────────────────────────────── */
+
+.leave-day-request-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.25rem 0.25rem;
+  flex-wrap: wrap;
+}
+
+.leave-day-request-form__fields {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.leave-day-request-form__input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #1e293b);
+}
+
+.leave-day-request-form__sep {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #64748b);
+  flex-shrink: 0;
+}
+
 /* ─── Schedule Tooltip ─────────────────────────────────────────── */
 
 .schedule-tooltip {
