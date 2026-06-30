@@ -109,8 +109,8 @@ async function fetchLeaveDays(token) {
 
   for (const leave of leaveDays) {
     if (!leave.Start || !leave.End) continue;
-    // State 1 = pending, State 3 = approved
-    // Use date-only strings to avoid timezone shifts (e.g. Railway running in UTC)
+    // State 1 = pending, State 2 = cancelled, State 3 = approved
+    if (leave.State === 2) continue;
     const startStr = leave.Start.split('T')[0];
     const endStr   = leave.End.split('T')[0];
     const status   = leave.State === 3 ? 'leave' : 'leave-pending';
@@ -147,8 +147,9 @@ async function fetchVacationData(token) {
 
     if (entry.IsHoliday) {
       map[iso] = 'holiday';
-    } else if (entry.DayType === 1) {
+    } else if (entry.DayType === 1 && entry.State !== 2) {
       // Vacation: State 3 = approved, State 1 = pending/requested
+      // State 2 = cancelled (skip — treat as regular workday)
       if (!map[iso] || map[iso] !== 'holiday') {
         map[iso] = entry.State === 3 ? 'vacation' : 'vacation-pending';
       }
@@ -233,7 +234,7 @@ export async function getVacationRequestsList(credentials) {
 
   const result = ranges.map(r => ({
     type: 'Vacaciones',
-    state: r.state === 3 ? 'Aprobada' : 'Solicitada',
+    state: r.state === 3 ? 'Aprobada' : r.state === 2 ? 'Cancelada' : 'Solicitada',
     stateCode: r.state,
     start: r.start,
     end: r.end,

@@ -59,11 +59,13 @@ details.leave-days-panel[open] .card-header__chevron {
   border-left: 3px solid transparent;
 }
 
-.leave-day-item--approved          { border-left-color: #22c55e; }
-.leave-day-item--pending           { border-left-color: #f59e0b; }
-.leave-day-item--vacation-approved { border-left-color: #0284c7; }
-.leave-day-item--vacation-pending  { border-left-color: #0284c7; border-left-style: dashed; }
-.leave-day-item--past              { border-left-color: #94a3b8; opacity: 0.7; }
+.leave-day-item--approved           { border-left-color: #22c55e; }
+.leave-day-item--pending            { border-left-color: #f59e0b; }
+.leave-day-item--cancelled          { border-left-color: #ef4444; opacity: 0.65; }
+.leave-day-item--vacation-approved  { border-left-color: #0284c7; }
+.leave-day-item--vacation-pending   { border-left-color: #0284c7; border-left-style: dashed; }
+.leave-day-item--vacation-cancelled { border-left-color: #ef4444; border-left-style: dashed; opacity: 0.65; }
+.leave-day-item--past               { border-left-color: #94a3b8; opacity: 0.7; }
 
 .leave-day-icon {
   font-size: 1rem;
@@ -74,8 +76,10 @@ details.leave-days-panel[open] .card-header__chevron {
 
 .leave-day-item--approved .leave-day-icon          { color: #22c55e; }
 .leave-day-item--pending  .leave-day-icon           { color: #f59e0b; }
+.leave-day-item--cancelled .leave-day-icon           { color: #ef4444; }
 .leave-day-item--vacation-approved .leave-day-icon  { color: #0284c7; }
 .leave-day-item--vacation-pending  .leave-day-icon  { color: #0ea5e9; }
+.leave-day-item--vacation-cancelled .leave-day-icon { color: #ef4444; }
 .leave-day-item--past     .leave-day-icon           { color: #94a3b8; }
 
 .leave-day-info {
