@@ -241,6 +241,8 @@ export async function getVacationRequestsList(credentials) {
     year: r.year,
   }));
 
+  logInfo('Vacation ranges from API', { count: result.length, states: [...new Set(result.map(r => r.stateCode))], details: result.map(r => ({ start: r.start, end: r.end, state: r.state, stateCode: r.stateCode })) });
+
   set(cacheKey, result, 1800);
   return result;
 }
