@@ -109,8 +109,8 @@ async function fetchLeaveDays(token) {
 
   for (const leave of leaveDays) {
     if (!leave.Start || !leave.End) continue;
-    // State 1 = pending, State 2 = cancelled, State 3 = approved
-    if (leave.State === 2) continue;
+    // State 1 = pending, State 2 = cancelled, State 3 = approved, State 6 = cancellation requested
+    if (leave.State === 2 || leave.State === 6) continue;
     const startStr = leave.Start.split('T')[0];
     const endStr   = leave.End.split('T')[0];
     const status   = leave.State === 3 ? 'leave' : 'leave-pending';
@@ -147,9 +147,9 @@ async function fetchVacationData(token) {
 
     if (entry.IsHoliday) {
       map[iso] = 'holiday';
-    } else if (entry.DayType === 1 && entry.State !== 2) {
+    } else if (entry.DayType === 1 && entry.State !== 2 && entry.State !== 6) {
       // Vacation: State 3 = approved, State 1 = pending/requested
-      // State 2 = cancelled (skip — treat as regular workday)
+      // State 2 = cancelled, State 6 = cancellation requested (skip — treat as regular workday)
       if (!map[iso] || map[iso] !== 'holiday') {
         map[iso] = entry.State === 3 ? 'vacation' : 'vacation-pending';
       }
@@ -234,14 +234,12 @@ export async function getVacationRequestsList(credentials) {
 
   const result = ranges.map(r => ({
     type: 'Vacaciones',
-    state: r.state === 3 ? 'Aprobada' : r.state === 2 ? 'Cancelada' : 'Solicitada',
+    state: r.state === 3 ? 'Aprobada' : r.state === 2 ? 'Cancelada' : r.state === 6 ? 'Cancelación solicitada' : 'Solicitada',
     stateCode: r.state,
     start: r.start,
     end: r.end,
     year: r.year,
   }));
-
-  logInfo('Vacation ranges from API', { count: result.length, states: [...new Set(result.map(r => r.stateCode))], details: result.map(r => ({ start: r.start, end: r.end, state: r.state, stateCode: r.stateCode })) });
 
   set(cacheKey, result, 1800);
   return result;

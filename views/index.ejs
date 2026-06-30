@@ -391,9 +391,9 @@
       </summary>
       <div class="leave-days-list">
         <% upcomingVacation.forEach(function(v) { %>
-        <div class="leave-day-item leave-day-item--<%= v.stateCode === 3 ? 'vacation-approved' : (v.stateCode === 2 ? 'vacation-cancelled' : 'vacation-pending') %>">
+        <div class="leave-day-item leave-day-item--<%= v.stateCode === 3 ? 'vacation-approved' : (v.stateCode === 2 ? 'vacation-cancelled' : (v.stateCode === 6 ? 'vacation-cancelling' : 'vacation-pending')) %>">
           <div class="leave-day-icon">
-            <i class="fas fa-<%= v.stateCode === 3 ? 'plane' : (v.stateCode === 2 ? 'ban' : 'hourglass-half') %>"></i>
+            <i class="fas fa-<%= v.stateCode === 3 ? 'plane' : (v.stateCode === 2 ? 'ban' : (v.stateCode === 6 ? 'times-circle' : 'hourglass-half')) %>"></i>
           </div>
           <div class="leave-day-info">
             <span class="leave-day-type"><%= v.type %></span>
@@ -405,9 +405,9 @@
         </div>
         <% }); %>
         <% upcomingLeave.forEach(function(l) { %>
-        <div class="leave-day-item leave-day-item--<%= l.stateCode === 3 ? 'approved' : (l.stateCode === 2 ? 'cancelled' : 'pending') %>">
+        <div class="leave-day-item leave-day-item--<%= l.stateCode === 3 ? 'approved' : (l.stateCode === 2 ? 'cancelled' : (l.stateCode === 6 ? 'cancelling' : 'pending')) %>">
           <div class="leave-day-icon">
-            <i class="fas fa-<%= l.stateCode === 3 ? 'check-circle' : (l.stateCode === 2 ? 'ban' : 'clock') %>"></i>
+            <i class="fas fa-<%= l.stateCode === 3 ? 'check-circle' : (l.stateCode === 2 ? 'ban' : (l.stateCode === 6 ? 'times-circle' : 'clock')) %>"></i>
           </div>
           <div class="leave-day-info">
             <span class="leave-day-type"><%= l.type %></span>
@@ -422,8 +422,8 @@
         <details class="leave-days-past">
           <summary>Ver <%= pastVacation.length + pastLeave.length %> registro<%= (pastVacation.length + pastLeave.length) !== 1 ? 's' : '' %> pasado<%= (pastVacation.length + pastLeave.length) !== 1 ? 's' : '' %></summary>
           <% pastVacation.forEach(function(v) { %>
-          <div class="leave-day-item leave-day-item--<%= v.stateCode === 2 ? 'vacation-cancelled' : 'past' %>">
-            <div class="leave-day-icon"><i class="fas fa-<%= v.stateCode === 2 ? 'ban' : 'plane' %>"></i></div>
+          <div class="leave-day-item leave-day-item--<%= v.stateCode === 2 ? 'vacation-cancelled' : (v.stateCode === 6 ? 'vacation-cancelling' : 'past') %>">
+            <div class="leave-day-icon"><i class="fas fa-<%= v.stateCode === 2 ? 'ban' : (v.stateCode === 6 ? 'times-circle' : 'plane') %>"></i></div>
             <div class="leave-day-info">
               <span class="leave-day-type"><%= v.type %></span>
               <span class="leave-day-dates">
@@ -435,8 +435,8 @@
           <% }); %>
 
           <% pastLeave.forEach(function(l) { %>
-          <div class="leave-day-item leave-day-item--<%= l.stateCode === 2 ? 'cancelled' : 'past' %>">
-            <div class="leave-day-icon"><i class="fas fa-<%= l.stateCode === 2 ? 'ban' : 'history' %>"></i></div>
+          <div class="leave-day-item leave-day-item--<%= l.stateCode === 2 ? 'cancelled' : (l.stateCode === 6 ? 'cancelling' : 'past') %>">
+            <div class="leave-day-icon"><i class="fas fa-<%= l.stateCode === 2 ? 'ban' : (l.stateCode === 6 ? 'times-circle' : 'history') %>"></i></div>
             <div class="leave-day-info">
               <span class="leave-day-type"><%= l.type %></span>
               <span class="leave-day-dates">
