@@ -12,13 +12,13 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
     - name: Build Docker image for scanning
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@v6
       with:
         context: .
         load: true
@@ -41,7 +41,7 @@ jobs:
       run: echo "Dockle security check temporarily disabled - will be re-enabled after version resolution"
 
     - name: Upload Dockle results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v4
       if: always()
       with:
         sarif_file: 'dockle-results.sarif'
