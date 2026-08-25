@@ -428,7 +428,10 @@ document.addEventListener('DOMContentLoaded', async function () {
       const firstPending = fillPendingBtn.dataset.firstPending;
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayISO = yesterday.toISOString().split('T')[0];
+      const y = yesterday.getFullYear();
+      const m = String(yesterday.getMonth() + 1).padStart(2, '0');
+      const d = String(yesterday.getDate()).padStart(2, '0');
+      const yesterdayISO = `${y}-${m}-${d}`;
       if (firstPending) {
         startDateInput.value = firstPending;
         endDateInput.value = yesterdayISO;
