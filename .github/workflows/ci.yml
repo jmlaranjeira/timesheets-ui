@@ -38,7 +38,7 @@ jobs:
       run: npm run test:coverage || echo "Coverage report skipped"
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v7
       with:
         file: ./coverage/lcov.info
         fail_ci_if_error: false
